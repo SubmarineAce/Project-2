@@ -1,0 +1,43 @@
+# Getting the input to change the chance and despawn time (ticks) of the file
+read -p "Legendary spawn chance (high, medium, low): " chance
+read -p "Legendary despawn time (high, medium, low): " despawn_time
+
+# Converting script to lowercase
+chance=$(echo "$chance" | tr '[:upper:]' '[:lower:]')
+despawn_time=$(echo "$despawn_time" | tr '[:upper:]' '[:lower:]')
+
+# Defining the file path
+file="spawning.yml"
+
+# backing up the file because why not
+cp "$file" "${file}.bak"
+
+# Reading the file and updating the spawn rates 
+while IFS= read -r line; do
+    if [[ "$line" == "legendary-spawn-chance:"* ]]; then
+        if [[ "$chance" == "high" ]]; then
+            line="legendary-spawn-chance: 0.90000001192092896"
+        elif [[ "$chance" == "low" ]]; then
+            line="legendary-spawn-chance: 0.10000001192092896"
+        fi
+    fi
+
+    if [[ "$line" == "legendary-despawn-ticks:"* ]]; then
+        if [[ "$despawn_time" == "high" ]]; then
+            line="legendary-despawn-ticks: 9000"
+        elif [[ "$despawn_time" == "medium" ]]; then
+            line="legendary-despawn-ticks: 6000"
+        elif [[ "$despawn_time" == "low" ]]; then
+            line="legendary-despawn-ticks: 3000"
+        fi
+    fi
+
+    # Write the updated line to a temporary file, so it doesn't overwrite the original
+    echo "$line" >> "${file}.tmp"
+done < "$file"
+
+# Overwriting the original file 
+mv "${file}.tmp" "$file"
+
+# Confirm the update
+echo "Spawning chances and despawn time for legendaries have been updated."
